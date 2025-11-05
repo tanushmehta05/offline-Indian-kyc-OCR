@@ -1,0 +1,13 @@
+how to run in short,
+
+download the project,(INCLUDING THE MODELS AND THE FACEMODELS PLEASE)
+install the requirements,
+
+cd kyc_ocr_app
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
+pip install -r requirements.txt
+uvicorn main:app --reload
+Visit http://127.0.0.1:8000
+
+incase of any dependency issues , run backup.py

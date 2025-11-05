@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Offline KYC OCR Extractor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color:#f7f8fa; margin:0; padding:0; }
+    .container { max-width:900px; margin:40px auto; background:#fff; padding:30px; border-radius:15px; box-shadow:0 6px 20px rgba(0,0,0,0.1); }
+    h2 { color:#333; margin-bottom:20px; }
+    label { font-weight:bold; margin-top:10px; display:block; }
+    select,input[type=file],button { margin-top:8px; margin-bottom:15px; width:100%; padding:12px; font-size:16px; border-radius:10px; border:1px solid #ccc; }
+    button { background:#4a90e2; color:#fff; cursor:pointer; transition:0.2s; font-weight:bold; }
+    button:hover { background:#357ABD; }
+    #chat-container { display:flex; flex-direction:column; gap:15px; margin-top:25px; }
+    .chat-bubble { max-width:90%; padding:15px 20px; border-radius:20px; line-height:1.5; word-wrap:break-word; }
+    .user { align-self:flex-end; background-color:#4a90e2; color:#fff; }
+    .bot { align-self:flex-start; background-color:#f1f0f0; color:#333; }
+    .bot img { display:block; margin-top:10px; max-width:200px; border-radius:10px; border:1px solid #ccc; }
+    .json-block { background:#e8e8e8; padding:10px; border-radius:10px; font-family:monospace; white-space:pre-wrap; overflow-x:auto; margin-top:10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Offline KYC OCR Extractor</h2>
+    <form id="extract-form" enctype="multipart/form-data">
+      <label for="doc_type">Document Type:</label>
+      <select name="doc_type" id="doc_type">
+        <option value="pan">PAN</option>
+        <option value="aadhaar">Aadhaar</option>
+        <option value="voter">Voter ID</option>
+        <option value="passport">Passport</option>
+        <option value="driving_license">Driving License</option>
+      </select>
+
+      <label for="file">Upload Document:</label>
+      <input type="file" id="file" name="file" accept=".jpg,.jpeg,.png,.pdf">
+
+      <button type="button" onclick="uploadExtract()">Extract & View JSON</button>
+      <button type="button" onclick="uploadDownload()">Extract & Download JSON</button>
+    </form>
+
+    <div id="chat-container"></div>
+  </div>
+
+  <script>
+    async function uploadExtract() {
+      const form = document.getElementById('extract-form');
+      const data = new FormData(form);
+      addUserBubble("Uploading and extracting data...");
+      try {
+        const res = await fetch('/extract', { method: 'POST', body: data });
+        const json = await res.json();
+        addBotBubble(json);
+      } catch (err) {
+        addBotBubble({ error: err.toString() });
+      }
+    }
+
+    async function uploadDownload() {
+      const form = document.getElementById('extract-form');
+      const data = new FormData(form);
+      const docType = document.getElementById('doc_type').value;
+      try {
+        const res = await fetch('/extract/download_json', { method: 'POST', body: data });
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = docType + "_data.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (err) {
+        addBotBubble({ error: err.toString() });
+      }
+    }
+
+    function addUserBubble(text) {
+      const chat = document.getElementById('chat-container');
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-bubble user';
+      bubble.textContent = text;
+      chat.appendChild(bubble);
+      bubble.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function addBotBubble(json) {
+      const chat = document.getElementById('chat-container');
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-bubble bot';
+      if(json.error) {
+        bubble.textContent = "Error: " + json.error;
+      } else {
+        let htmlContent = "";
+        htmlContent += "<strong>Extracted Details:</strong>";
+        htmlContent += "<div class='json-block'>" + JSON.stringify(json.extracted_details, null, 4) + "</div>";
+        if(json.photo_base64){
+          htmlContent += "<strong>Extracted Photo:</strong><br><img src='data:image/jpeg;base64," + json.photo_base64 + "' />";
+        }
+        bubble.innerHTML = htmlContent;
+      }
+      chat.appendChild(bubble);
+      bubble.scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

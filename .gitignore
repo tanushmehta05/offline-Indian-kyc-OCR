@@ -1,0 +1,58 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Python cache
+*.egg-info/
+.eggs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Model weights backups
+*.pt.backup
+*.onnx
+
+# PDFs and uploads
+uploads/
+output/
+*.pdf
+*.jpg
+*.jpeg
+*.png
+
+# Environment configs
+.env
+.env.*
+
+# FastAPI cache
+__pypackages__/
+
+# Ignore large PaddleOCR data if any cached
+.paddleocr/
+paddleocr_data/
+
+# Build directories
+build/
+dist/
+
+# Uvicorn reload artifacts
+*.pid
